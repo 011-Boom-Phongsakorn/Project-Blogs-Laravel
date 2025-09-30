@@ -3,12 +3,14 @@
     @if($post->cover_image)
         <div class="relative overflow-hidden">
             <img src="{{ $post->cover_image }}" alt="{{ $post->title }}"
+                 loading="lazy"
                  class="post-card-image group-hover:scale-105 transition-transform duration-300">
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
     @elseif($post->hasImage())
         <div class="relative overflow-hidden">
             <img src="{{ $post->getImageUrl() }}" alt="{{ $post->getImageAlt() }}"
+                 loading="lazy"
                  class="post-card-image group-hover:scale-105 transition-transform duration-300">
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
@@ -19,17 +21,17 @@
         <div class="flex items-center mb-4">
             @if($post->user)
                 @if($post->user->avatar)
-                    <img src="{{ $post->user->avatar }}" alt="{{ $post->user->name }}" class="author-avatar mr-3">
+                    <img src="{{ $post->user->avatar }}" alt="{{ $post->user->name }}" loading="lazy" class="author-avatar mr-3">
                 @else
                     <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full mr-3 flex items-center justify-center">
                         <span class="text-white text-xs font-semibold">{{ substr($post->user->name, 0, 1) }}</span>
                     </div>
                 @endif
                 <div class="flex-1 min-w-0">
-                    <a href="{{ route('users.show', $post->user) }}" class="text-sm font-medium text-gray-900 hover:text-primary-600 transition-colors">
+                    <a href="{{ route('users.show', $post->user) }}" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
                         {{ $post->user->name }}
                     </a>
-                    <div class="flex items-center text-xs text-gray-500 mt-0.5">
+                    <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                         <time datetime="{{ $post->created_at->toISOString() }}">
                             {{ $post->created_at->format('M j, Y') }}
                         </time>
@@ -38,12 +40,12 @@
                     </div>
                 </div>
             @else
-                <div class="w-8 h-8 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
-                    <span class="text-gray-600 text-xs font-medium">?</span>
+                <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full mr-3 flex items-center justify-center">
+                    <span class="text-gray-600 dark:text-gray-300 text-xs font-medium">?</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <span class="text-sm font-medium text-gray-900">Unknown Author</span>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ $post->created_at->format('M j, Y') }}</p>
+                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Unknown Author</span>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $post->created_at->format('M j, Y') }}</p>
                 </div>
             @endif
         </div>

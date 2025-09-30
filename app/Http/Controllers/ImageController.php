@@ -13,7 +13,13 @@ class ImageController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
+            'image' => [
+                'required',
+                'image',
+                'mimes:jpeg,png,jpg,gif,webp',
+                'max:5120', // 5MB max
+                'dimensions:min_width=100,min_height=100,max_width=4000,max_height=4000'
+            ],
         ]);
 
         try {
@@ -65,33 +71,34 @@ class ImageController extends Controller
     public function uploadAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 2MB max
+            'image' => [
+                'required',
+                'image',
+                'mimes:jpeg,png,jpg,gif,webp',
+                'max:2048', // 2MB max
+                'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000'
+            ],
         ]);
 
         try {
-            $image = $request->file('avatar');
+            $image = $request->file('image');
 
             // Generate unique filename
             $filename = 'avatar_' . auth()->id() . '_' . time() . '.' . $image->getClientOriginalExtension();
 
+            // Initialize ImageManager with GD driver
+            $manager = new ImageManager(new Driver());
+
             // Create square avatar (300x300)
-            $avatar = Image::make($image)->fit(300, 300);
+            $avatar = $manager->read($image->getRealPath())
+                ->cover(300, 300);
 
             $avatarPath = 'uploads/avatars/' . $filename;
-            Storage::disk('public')->put($avatarPath, (string) $avatar->encode());
-
-            // Delete old avatar if exists
-            $user = auth()->user();
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-
-            // Update user avatar
-            $user->update(['avatar' => $avatarPath]);
+            Storage::disk('public')->put($avatarPath, $avatar->encode());
 
             return response()->json([
                 'success' => true,
-                'message' => 'Avatar updated successfully',
+                'message' => 'Avatar uploaded successfully',
                 'url' => Storage::url($avatarPath),
                 'path' => $avatarPath,
             ]);

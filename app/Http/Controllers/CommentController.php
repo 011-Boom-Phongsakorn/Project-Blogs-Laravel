@@ -6,9 +6,11 @@ use App\Models\Post;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CommentController extends Controller
 {
+    use AuthorizesRequests;
     public function __construct()
     {
         // Middleware handled in routes
@@ -41,12 +43,9 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment): RedirectResponse
     {
+        $this->authorize('delete', $comment);
+
         $post = $comment->post;
-
-        if (auth()->id() !== $comment->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
         $comment->delete();
 
         return redirect()->route('posts.show', $post)

@@ -5,10 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class Post extends Model
 {
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::created(function () {
+            Cache::forget('popular_tags');
+        });
+
+        static::updated(function () {
+            Cache::forget('popular_tags');
+        });
+
+        static::deleted(function () {
+            Cache::forget('popular_tags');
+        });
+    }
 
     protected $fillable = [
         'user_id',
@@ -119,5 +135,51 @@ class Post extends Model
     {
         if (!$userId) return false;
         return $this->likes()->where('user_id', $userId)->exists();
+    }
+
+    /**
+     * Calculate reading time based on content word count
+     * Average reading speed: 200 words per minute
+     */
+    public function getReadingTimeAttribute()
+    {
+        $wordCount = str_word_count(strip_tags($this->content));
+        $minutes = ceil($wordCount / 200);
+
+        if ($minutes < 1) {
+            return '1 min read';
+        }
+
+        return $minutes . ' min read';
+    }
+
+    /**
+     * Get related posts based on shared tags
+     */
+    public function relatedPosts($limit = 3)
+    {
+        if ($this->tags->isEmpty()) {
+            // If no tags, return recent posts from same author
+            return Post::where('user_id', $this->user_id)
+                ->where('id', '!=', $this->id)
+                ->published()
+                ->latest()
+                ->take($limit)
+                ->get();
+        }
+
+        // Get posts with shared tags
+        $tagIds = $this->tags->pluck('id');
+
+        return Post::whereHas('tags', function ($query) use ($tagIds) {
+            $query->whereIn('tag_id', $tagIds);
+        })
+        ->where('id', '!=', $this->id)
+        ->published()
+        ->with(['user', 'tags'])
+        ->withCount(['likes', 'comments'])
+        ->latest()
+        ->take($limit)
+        ->get();
     }
 }

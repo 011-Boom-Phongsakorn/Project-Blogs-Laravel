@@ -22,13 +22,30 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'content' => ['required', 'string'],
+            'title' => ['required', 'string', 'max:255', 'min:3'],
+            'content' => ['required', 'string', 'min:10', 'max:100000'],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'cover_image' => ['nullable', 'url', 'max:255'],
             'featured_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'featured_image_alt' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'in:draft,published'],
+            'tags' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Please provide a title for your post.',
+            'title.min' => 'The title must be at least 3 characters.',
+            'title.max' => 'The title cannot exceed 255 characters.',
+            'content.required' => 'Please provide content for your post.',
+            'content.min' => 'The content must be at least 10 characters.',
+            'content.max' => 'The content cannot exceed 100,000 characters.',
+            'status.in' => 'Invalid status. Must be either draft or published.',
         ];
     }
 }

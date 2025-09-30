@@ -9,9 +9,11 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PostController extends Controller
 {
+    use AuthorizesRequests;
     public function __construct()
     {
         // Middleware is now handled in routes
@@ -60,8 +62,14 @@ class PostController extends Controller
             $post->tags()->sync(collect($tags)->pluck('id'));
         }
 
+        // Redirect based on status
+        if ($post->status === 'draft') {
+            return redirect()->route('posts.mine')
+                ->with('success', 'Draft saved successfully!');
+        }
+
         return redirect()->route('posts.show', $post)
-            ->with('success', 'Post created successfully!');
+            ->with('success', 'Post published successfully!');
     }
 
     /**
@@ -69,6 +77,11 @@ class PostController extends Controller
      */
     public function show(Post $post): View
     {
+        // Allow viewing drafts only for the post owner
+        if ($post->status === 'draft' && (!auth()->check() || auth()->id() !== $post->user_id)) {
+            abort(404);
+        }
+
         $post->load(['user', 'tags', 'comments.user']);
         $post->loadCount(['likes', 'comments']);
 
@@ -232,5 +245,26 @@ class PostController extends Controller
             });
 
         return response()->json($posts);
+    }
+
+    /**
+     * Display user's own posts (both draft and published).
+     */
+    public function myPosts(Request $request): View
+    {
+        $query = Post::where('user_id', auth()->id());
+
+        // Filter by status if provided
+        if ($request->has('status') && in_array($request->status, ['draft', 'published'])) {
+            $query->where('status', $request->status);
+        }
+
+        $posts = $query->with(['tags'])
+            ->withCount(['likes', 'comments'])
+            ->latest()
+            ->paginate(12)
+            ->appends($request->query());
+
+        return view('posts.mine', compact('posts'));
     }
 }

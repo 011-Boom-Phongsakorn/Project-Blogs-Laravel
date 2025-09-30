@@ -9,9 +9,15 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\RssFeedController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PostController::class, 'index'])->name('home');
+
+// RSS Feeds
+Route::get('/feed', [RssFeedController::class, 'index'])->name('feed.rss');
+Route::get('/feed/user/{user}', [RssFeedController::class, 'user'])->name('feed.user');
+Route::get('/feed/tag/{tag}', [RssFeedController::class, 'tag'])->name('feed.tag');
 
 // Public post routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
@@ -34,28 +40,31 @@ Route::get('/tags/{tag:name}', [TagController::class, 'show'])->name('tags.show'
 Route::get('/api/tags/popular', [TagController::class, 'popular'])->name('tags.popular');
 Route::get('/api/tags/search', [TagController::class, 'search'])->name('tags.search');
 
-// Authenticated routes
-Route::middleware('auth')->group(function () {
-    // Post management
-    Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+// Authenticated routes with rate limiting
+Route::middleware(['auth', 'throttle:60,1'])->group(function () {
+    // My posts (must be before {slug} routes)
+    Route::get('/my-posts', [PostController::class, 'myPosts'])->name('posts.mine');
+
+    // Post management (stricter rate limit for write operations)
+    Route::post('/posts', [PostController::class, 'store'])->name('posts.store')->middleware('throttle:10,1');
     Route::get('/posts/{post:slug}/edit', [PostController::class, 'edit'])->name('posts.edit');
-    Route::put('/posts/{post:slug}', [PostController::class, 'update'])->name('posts.update');
-    Route::delete('/posts/{post:slug}', [PostController::class, 'destroy'])->name('posts.destroy');
+    Route::put('/posts/{post:slug}', [PostController::class, 'update'])->name('posts.update')->middleware('throttle:10,1');
+    Route::delete('/posts/{post:slug}', [PostController::class, 'destroy'])->name('posts.destroy')->middleware('throttle:10,1');
 
     // Social features (use ID for AJAX endpoints - explicitly bind by ID)
-    Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])->name('posts.like')->where('post', '[0-9]+');
-    Route::post('/users/{user}/follow', [FollowController::class, 'toggle'])->name('users.follow')->where('user', '[0-9]+');
-    Route::post('/posts/{post}/bookmark', [BookmarkController::class, 'toggle'])->name('posts.bookmark')->where('post', '[0-9]+');
+    Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])->name('posts.like')->middleware('throttle:30,1');
+    Route::post('/users/{user}/follow', [FollowController::class, 'toggle'])->name('users.follow')->middleware('throttle:30,1');
+    Route::post('/posts/{post}/bookmark', [BookmarkController::class, 'toggle'])->name('posts.bookmark')->middleware('throttle:30,1');
     Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
 
     // Comments
-    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store')->where('post', '[0-9]+');
-    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store')->where('post', '[0-9]+')->middleware('throttle:20,1');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy')->middleware('throttle:20,1');
 
-    // Image uploads
-    Route::post('/upload/image', [ImageController::class, 'upload'])->name('upload.image');
-    Route::post('/upload/avatar', [ImageController::class, 'uploadAvatar'])->name('upload.avatar');
-    Route::delete('/upload/delete', [ImageController::class, 'delete'])->name('upload.delete');
+    // Image uploads (strict rate limit)
+    Route::post('/upload/image', [ImageController::class, 'upload'])->name('upload.image')->middleware('throttle:10,1');
+    Route::post('/upload/avatar', [ImageController::class, 'uploadAvatar'])->name('upload.avatar')->middleware('throttle:5,1');
+    Route::delete('/upload/delete', [ImageController::class, 'delete'])->name('upload.delete')->middleware('throttle:10,1');
 
     // Profile management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

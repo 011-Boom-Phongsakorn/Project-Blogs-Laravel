@@ -2,13 +2,13 @@
     <x-slot name="title">{{ config('app.name', 'Blog') }} - Discover Stories</x-slot>
 
     <!-- Hero Section -->
-    <section class="hero-gradient border-b border-gray-200">
+    <section class="bg-gradient-to-br from-primary-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-800">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
             <div class="text-center">
-                <h1 class="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 text-balance">
+                <h1 class="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-balance">
                     Human stories & ideas
                 </h1>
-                <p class="text-xl lg:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto text-balance">
+                <p class="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto text-balance">
                     A place to read, write, and deepen your understanding
                 </p>
                 @guest
@@ -35,7 +35,7 @@
     </section>
 
     <!-- Main Content -->
-    <main class="bg-gray-50 min-h-screen">
+    <main class="bg-gray-50 dark:bg-gray-950 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             @if($posts->count() > 0)
                 <!-- Featured Section -->
@@ -59,9 +59,7 @@
 
                 <!-- Pagination -->
                 <div class="flex justify-center">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        {{ $posts->links() }}
-                    </div>
+                    {{ $posts->links() }}
                 </div>
             @else
                 <!-- Empty State -->
@@ -98,30 +96,4 @@
             @endif
         </div>
     </main>
-
-    <!-- Newsletter Section -->
-    @if($posts->count() > 0)
-        <section class="bg-white border-t border-gray-200">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <div class="text-center">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Stay in the know</h2>
-                    <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                        Get the best stories delivered to your inbox every week.
-                    </p>
-                    <form class="max-w-md mx-auto">
-                        <div class="flex gap-3">
-                            <input type="email" placeholder="Enter your email"
-                                   class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                            <button type="submit" class="btn-primary whitespace-nowrap">
-                                Subscribe
-                            </button>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-3">
-                            We'll never share your email. Unsubscribe at any time.
-                        </p>
-                    </form>
-                </div>
-            </div>
-        </section>
-    @endif
 </x-app-layout>

@@ -4,7 +4,7 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Post Header -->
         <header class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-6">{{ $post->title }}</h1>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">{{ $post->title }}</h1>
 
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center">
@@ -12,26 +12,26 @@
                         @if($post->user->avatar)
                             <img src="{{ $post->user->avatar }}" alt="{{ $post->user->name }}" class="w-12 h-12 rounded-full mr-4">
                         @else
-                            <div class="w-12 h-12 bg-gray-300 rounded-full mr-4 flex items-center justify-center">
-                                <span class="text-gray-600 text-lg font-medium">{{ substr($post->user->name, 0, 1) }}</span>
+                            <div class="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full mr-4 flex items-center justify-center">
+                                <span class="text-gray-600 dark:text-gray-300 text-lg font-medium">{{ substr($post->user->name, 0, 1) }}</span>
                             </div>
                         @endif
                         <div>
                             <div class="flex items-center space-x-3">
-                                <a href="{{ route('users.show', $post->user) }}" class="text-lg font-medium text-gray-900 hover:text-blue-600">
+                                <a href="{{ route('users.show', $post->user) }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400">
                                     {{ $post->user->name }}
                                 </a>
                                 <x-follow-button :user="$post->user" />
                             </div>
-                            <p class="text-sm text-gray-500">{{ $post->created_at->format('M j, Y') }} · {{ $post->created_at->diffForHumans() }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $post->created_at->format('M j, Y') }} · {{ $post->created_at->diffForHumans() }}</p>
                         </div>
                     @else
-                        <div class="w-12 h-12 bg-gray-300 rounded-full mr-4 flex items-center justify-center">
-                            <span class="text-gray-600 text-lg font-medium">?</span>
+                        <div class="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full mr-4 flex items-center justify-center">
+                            <span class="text-gray-600 dark:text-gray-300 text-lg font-medium">?</span>
                         </div>
                         <div>
-                            <span class="text-lg font-medium text-gray-900">Unknown Author</span>
-                            <p class="text-sm text-gray-500">{{ $post->created_at->format('M j, Y') }} · {{ $post->created_at->diffForHumans() }}</p>
+                            <span class="text-lg font-medium text-gray-900 dark:text-gray-100">Unknown Author</span>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $post->created_at->format('M j, Y') }} · {{ $post->created_at->diffForHumans() }}</p>
                         </div>
                     @endif
                 </div>
@@ -193,5 +193,81 @@
                 </div>
             @endif
         </section>
+
+        <!-- Social Share Buttons -->
+        <div class="mt-12 pt-8 border-t border-gray-200">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Share this post</h4>
+            <div class="flex items-center space-x-3">
+                <!-- Facebook -->
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('posts.show', $post)) }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="flex items-center justify-center w-10 h-10 bg-[#4267B2] hover:bg-[#365899] text-white rounded-full transition-colors"
+                   title="Share on Facebook">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+
+                <!-- Copy Link -->
+                <button onclick="copyToClipboard('{{ route('posts.show', $post) }}')"
+                        class="flex items-center justify-center w-10 h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors"
+                        title="Copy link">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Related Posts -->
+        @php
+            $relatedPosts = $post->relatedPosts(3);
+        @endphp
+
+        @if($relatedPosts->count() > 0)
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Related Posts</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach($relatedPosts as $relatedPost)
+                        <article class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                            @if($relatedPost->hasImage())
+                                <a href="{{ route('posts.show', $relatedPost) }}">
+                                    <img src="{{ $relatedPost->getImageUrl() }}" alt="{{ $relatedPost->getImageAlt() }}"
+                                         loading="lazy"
+                                         class="w-full h-48 object-cover">
+                                </a>
+                            @endif
+                            <div class="p-4">
+                                <h4 class="font-bold text-lg mb-2 line-clamp-2">
+                                    <a href="{{ route('posts.show', $relatedPost) }}" class="hover:text-blue-600">
+                                        {{ $relatedPost->title }}
+                                    </a>
+                                </h4>
+                                @if($relatedPost->excerpt)
+                                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ $relatedPost->excerpt }}</p>
+                                @endif
+                                <div class="flex items-center justify-between text-sm text-gray-500">
+                                    <span>{{ $relatedPost->reading_time }}</span>
+                                    <span>{{ $relatedPost->likes_count }} likes</span>
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
+
+    @push('scripts')
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Link copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
+    @endpush
 </x-app-layout>

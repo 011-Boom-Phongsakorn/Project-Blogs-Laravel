@@ -2,11 +2,11 @@
     <x-slot name="title">Edit: {{ $post->title }} - {{ config('app.name', 'Blog') }}</x-slot>
 
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8">
             <div class="flex items-center justify-between mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Edit Post</h1>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Edit Post</h1>
                 <div class="flex space-x-3">
-                    <a href="{{ route('posts.show', $post) }}" class="text-gray-600 hover:text-gray-800">
+                    <a href="{{ route('posts.show', $post) }}" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300">
                         View Post
                     </a>
                     <form action="{{ route('posts.destroy', $post) }}" method="POST" class="inline">
@@ -14,7 +14,7 @@
                         @method('DELETE')
                         <button
                             type="submit"
-                            class="text-red-600 hover:text-red-800"
+                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                             onclick="return confirm('Are you sure you want to delete this post?')"
                         >
                             Delete
@@ -25,17 +25,17 @@
 
             <form action="{{ route('posts.update', $post) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
-                @method('PATCH')
+                @method('PUT')
 
                 <!-- Title -->
                 <div>
-                    <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                    <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
                     <input
                         type="text"
                         id="title"
                         name="title"
                         value="{{ old('title', $post->title) }}"
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xl"
+                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xl"
                         placeholder="Enter your post title..."
                         required
                     >
@@ -46,105 +46,92 @@
 
                 <!-- Excerpt -->
                 <div>
-                    <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="excerpt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Excerpt (Optional)
                     </label>
                     <textarea
                         id="excerpt"
                         name="excerpt"
                         rows="3"
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Brief summary of your post..."
                     >{{ old('excerpt', $post->excerpt) }}</textarea>
-                    <p class="text-sm text-gray-500 mt-1">A short description that will appear in post previews.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">A short description that will appear in post previews.</p>
                     @error('excerpt')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Cover Image -->
+                <!-- Cover Image Upload -->
                 <div>
-                    <label for="cover_image" class="block text-sm font-medium text-gray-700 mb-2">
-                        Cover Image URL (Optional)
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Cover Image (Optional)
                     </label>
-                    <input
-                        type="url"
-                        id="cover_image"
-                        name="cover_image"
-                        value="{{ old('cover_image', $post->cover_image) }}"
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="https://example.com/image.jpg"
+                    <div
+                        id="image-upload-area"
+                        class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-md hover:border-blue-400 dark:hover:border-blue-500 transition-colors dark:bg-gray-800"
                     >
-                    @if($post->cover_image)
-                        <div class="mt-2">
-                            <img src="{{ $post->cover_image }}" alt="Current cover" class="h-32 w-auto rounded">
-                        </div>
-                    @endif
-                    @error('cover_image')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Featured Image Upload -->
-                <div>
-                    <label for="featured_image" class="block text-sm font-medium text-gray-700 mb-2">
-                        Featured Image Upload (Optional)
-                    </label>
-
-                    @if($post->featured_image)
-                        <div class="mb-4">
-                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->featured_image_alt ?? $post->title }}" class="h-32 w-auto rounded">
-                            <p class="text-sm text-gray-500 mt-1">Current featured image</p>
-                        </div>
-                    @endif
-
-                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                        <div class="space-y-1 text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <div class="space-y-1 text-center pointer-events-none">
+                            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            <div class="flex text-sm text-gray-600">
-                                <label for="featured_image" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                    <span>Upload a file</span>
-                                    <input id="featured_image" name="featured_image" type="file" class="sr-only" accept="image/*">
-                                </label>
+                            <div class="flex text-sm text-gray-600 dark:text-gray-400 justify-center">
+                                <span class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500">Upload a file</span>
                                 <p class="pl-1">or drag and drop</p>
                             </div>
-                            <p class="text-xs text-gray-500">PNG, JPG, GIF, WebP up to 2MB</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF, WebP up to 5MB</p>
                         </div>
                     </div>
-                    @error('featured_image')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <!-- Featured Image Alt Text -->
-                <div>
-                    <label for="featured_image_alt" class="block text-sm font-medium text-gray-700 mb-2">
-                        Image Alt Text (Optional)
-                    </label>
+                    <!-- Hidden file input -->
                     <input
-                        type="text"
-                        id="featured_image_alt"
-                        name="featured_image_alt"
-                        value="{{ old('featured_image_alt', $post->featured_image_alt) }}"
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Describe the image for accessibility..."
+                        id="cover_image_file"
+                        type="file"
+                        class="hidden"
+                        accept="image/*"
                     >
-                    <p class="text-sm text-gray-500 mt-1">Helps screen readers understand the image content.</p>
-                    @error('featured_image_alt')
+
+                    <!-- Hidden input for the actual URL that will be submitted -->
+                    <input type="hidden" name="cover_image" id="cover_image" value="{{ old('cover_image', $post->cover_image) }}">
+
+                    <!-- Image preview -->
+                    <div id="image-preview" class="mt-4 {{ $post->cover_image ? '' : 'hidden' }}">
+                        <div class="relative">
+                            <img id="preview-image" src="{{ $post->cover_image }}" alt="Preview" class="max-w-full h-48 object-cover rounded-md">
+                            <button
+                                type="button"
+                                onclick="removeImage()"
+                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2" id="image-info">{{ $post->cover_image ? 'Current cover image' : '' }}</p>
+                    </div>
+
+                    <!-- Upload progress -->
+                    <div id="upload-progress" class="mt-4 hidden">
+                        <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div id="progress-bar" class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Uploading...</p>
+                    </div>
+
+                    @error('cover_image')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Content -->
                 <div>
-                    <label for="content" class="block text-sm font-medium text-gray-700 mb-2">Content</label>
+                    <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
                     <textarea
                         id="content"
                         name="content"
                         rows="20"
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Tell your story..."
                         required
                     >{{ old('content', $post->content) }}</textarea>
@@ -153,49 +140,241 @@
                     @enderror
                 </div>
 
-                <!-- Status -->
+                <!-- Tags -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <div class="flex space-x-4">
-                        <label class="inline-flex items-center">
-                            <input
-                                type="radio"
-                                name="status"
-                                value="draft"
-                                {{ old('status', $post->status) === 'draft' ? 'checked' : '' }}
-                                class="form-radio h-4 w-4 text-blue-600"
-                            >
-                            <span class="ml-2 text-gray-700">Draft</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input
-                                type="radio"
-                                name="status"
-                                value="published"
-                                {{ old('status', $post->status) === 'published' ? 'checked' : '' }}
-                                class="form-radio h-4 w-4 text-blue-600"
-                            >
-                            <span class="ml-2 text-gray-700">Published</span>
-                        </label>
-                    </div>
-                    @error('status')
+                    <label for="tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Tags (Optional)
+                    </label>
+                    <input
+                        type="text"
+                        id="tags"
+                        name="tags"
+                        value="{{ old('tags', $post->tags->pluck('name')->join(', ')) }}"
+                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="e.g., javascript, laravel, tutorial (separate with commas)"
+                    >
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Add relevant tags separated by commas. Tags help readers find your content.</p>
+                    @error('tags')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
+
+                    <!-- Current tags -->
+                    @if($post->tags->count() > 0)
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            <p class="text-xs text-gray-600 dark:text-gray-400 w-full">Current tags:</p>
+                            @foreach($post->tags as $tag)
+                                <span class="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">{{ $tag->name }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <!-- Tag suggestions -->
+                    <div id="tag-suggestions" class="mt-2 flex flex-wrap gap-2 hidden">
+                        <p class="text-xs text-gray-600 dark:text-gray-400 w-full">Popular tags:</p>
+                    </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                    <a href="{{ route('posts.show', $post) }}" class="text-gray-600 hover:text-gray-800">
+                <div class="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-800">
+                    <a href="{{ route('posts.show', $post) }}" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300">
                         Cancel
                     </a>
-                    <button
-                        type="submit"
-                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                        Update Post
-                    </button>
+                    <div class="flex space-x-3">
+                        <button
+                            type="submit"
+                            name="status"
+                            value="draft"
+                            class="px-6 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        >
+                            Save as Draft
+                        </button>
+                        <button
+                            type="submit"
+                            name="status"
+                            value="published"
+                            class="px-6 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600"
+                        >
+                            {{ $post->status === 'published' ? 'Update' : 'Publish' }}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        // Image upload handling
+        const uploadArea = document.getElementById('image-upload-area');
+        const fileInput = document.getElementById('cover_image_file');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImage = document.getElementById('preview-image');
+        const imageInfo = document.getElementById('image-info');
+        const uploadProgress = document.getElementById('upload-progress');
+        const progressBar = document.getElementById('progress-bar');
+        const coverImageInput = document.getElementById('cover_image');
+
+        // Flag to prevent multiple clicks
+        let isClickPending = false;
+
+        // Remove any existing event listeners by cloning
+        const newUploadArea = uploadArea.cloneNode(true);
+        uploadArea.parentNode.replaceChild(newUploadArea, uploadArea);
+        const uploadAreaClean = document.getElementById('image-upload-area');
+
+        // Show upload area if no image exists
+        if (!coverImageInput.value) {
+            uploadAreaClean.classList.remove('hidden');
+        } else {
+            uploadAreaClean.classList.add('hidden');
+        }
+
+        // Click to upload
+        uploadAreaClean.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (isClickPending) {
+                return;
+            }
+
+            isClickPending = true;
+            fileInput.click();
+
+            setTimeout(() => {
+                isClickPending = false;
+            }, 1000);
+        });
+
+        // Drag and drop
+        uploadAreaClean.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadAreaClean.classList.add('border-blue-400', 'bg-blue-50');
+        });
+
+        uploadAreaClean.addEventListener('dragleave', () => {
+            uploadAreaClean.classList.remove('border-blue-400', 'bg-blue-50');
+        });
+
+        uploadAreaClean.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadAreaClean.classList.remove('border-blue-400', 'bg-blue-50');
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        function handleFileUpload(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+                uploadAreaClean.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+
+            uploadToServer(file);
+        }
+
+        function uploadToServer(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            uploadProgress.classList.remove('hidden');
+
+            fetch('{{ route("upload.image") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    coverImageInput.value = data.url;
+                    imageInfo.textContent = `Uploaded: ${file.name} (${formatFileSize(file.size)})`;
+                } else {
+                    throw new Error(data.message || 'Upload failed');
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                alert('Upload failed: ' + error.message);
+                removeImage();
+            })
+            .finally(() => {
+                uploadProgress.classList.add('hidden');
+                progressBar.style.width = '0%';
+            });
+        }
+
+        function removeImage() {
+            previewImage.src = '';
+            coverImageInput.value = '';
+            imagePreview.classList.add('hidden');
+            uploadAreaClean.classList.remove('hidden');
+            fileInput.value = '';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        window.removeImage = removeImage;
+
+        // Tags functionality
+        const tagsInput = document.getElementById('tags');
+        const tagSuggestions = document.getElementById('tag-suggestions');
+
+        // Load popular tags
+        fetch('{{ route("tags.popular") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    tagSuggestions.classList.remove('hidden');
+                    data.forEach(tag => {
+                        const tagButton = document.createElement('button');
+                        tagButton.type = 'button';
+                        tagButton.textContent = tag.name;
+                        tagButton.className = 'px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors';
+                        tagButton.onclick = () => addTag(tag.name);
+                        tagSuggestions.appendChild(tagButton);
+                    });
+                }
+            })
+            .catch(error => console.error('Failed to load tags:', error));
+
+        function addTag(tagName) {
+            const currentTags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
+            if (!currentTags.includes(tagName)) {
+                currentTags.push(tagName);
+                tagsInput.value = currentTags.join(', ');
+            }
+        }
+    </script>
+    @endpush
 </x-app-layout>

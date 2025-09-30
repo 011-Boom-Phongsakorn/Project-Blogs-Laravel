@@ -18,12 +18,9 @@ class BookmarkController extends Controller
     /**
      * Toggle bookmark/unbookmark for a post
      */
-    public function toggle(Request $request, $post): JsonResponse
+    public function toggle(Post $post): JsonResponse
     {
         $user = auth()->user();
-
-        // Find post by ID since we're using ID in the route
-        $post = Post::findOrFail($post);
 
         $existingBookmark = Bookmark::where('user_id', $user->id)
             ->where('post_id', $post->id)

@@ -43,11 +43,13 @@ class TagController extends Controller
      */
     public function popular(): JsonResponse
     {
-        $tags = Tag::withCount('posts')
-            ->having('posts_count', '>', 0)
-            ->orderBy('posts_count', 'desc')
-            ->limit(20)
-            ->get(['name', 'slug', 'posts_count']);
+        $tags = \Cache::remember('popular_tags', 3600, function () {
+            return Tag::withCount('posts')
+                ->having('posts_count', '>', 0)
+                ->orderBy('posts_count', 'desc')
+                ->limit(20)
+                ->get(['name', 'posts_count']);
+        });
 
         return response()->json($tags);
     }
@@ -67,7 +69,7 @@ class TagController extends Controller
             ->withCount('posts')
             ->orderBy('posts_count', 'desc')
             ->limit(10)
-            ->get(['name', 'slug', 'posts_count']);
+            ->get(['name', 'posts_count']);
 
         return response()->json($tags);
     }
@@ -83,10 +85,10 @@ class TagController extends Controller
         $tags = [];
         foreach ($tagNames as $tagName) {
             if (strlen($tagName) > 0 && strlen($tagName) <= 50) {
-                $tag = Tag::firstOrCreate([
-                    'name' => $tagName,
-                    'slug' => \Illuminate\Support\Str::slug($tagName)
-                ]);
+                // Search by name only, create if doesn't exist
+                $tag = Tag::firstOrCreate(
+                    ['name' => $tagName]
+                );
                 $tags[] = $tag;
             }
         }

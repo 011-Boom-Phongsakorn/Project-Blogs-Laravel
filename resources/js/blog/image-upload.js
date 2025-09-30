@@ -209,9 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadArea.addEventListener('drop', handleImageDrop);
         uploadArea.addEventListener('dragover', handleDragOver);
         uploadArea.addEventListener('dragleave', handleDragLeave);
-        uploadArea.addEventListener('click', function() {
-            document.getElementById('cover_image_file').click();
-        });
+        // Note: Click handler is managed per-page in Blade templates to avoid conflicts
     }
 
     // Check if there's an existing image (for edit forms)
