@@ -2,7 +2,7 @@
     <!-- Cover Image -->
     @if($post->cover_image)
         <div class="relative overflow-hidden">
-            <img src="{{ $post->cover_image }}" alt="{{ $post->title }}"
+            <img src="{{ $post->cover_image_url }}" alt="{{ $post->title }}"
                  loading="lazy"
                  class="post-card-image group-hover:scale-105 transition-transform duration-300">
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

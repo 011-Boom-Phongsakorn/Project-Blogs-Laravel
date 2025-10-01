@@ -10,6 +10,22 @@
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
+
+            <!-- Resend Verification Link -->
+            @if($errors->has('email') && str_contains($errors->first('email'), 'verify'))
+                <div class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
+                        Haven't received the verification email?
+                    </p>
+                    <form method="POST" action="{{ route('verification.send') }}" class="inline">
+                        @csrf
+                        <input type="hidden" name="email" value="{{ old('email') }}">
+                        <button type="submit" class="text-sm font-semibold text-yellow-700 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-100 underline">
+                            Resend verification email
+                        </button>
+                    </form>
+                </div>
+            @endif
         </div>
 
         <!-- Password -->

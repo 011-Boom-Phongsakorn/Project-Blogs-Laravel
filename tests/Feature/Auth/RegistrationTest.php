@@ -25,7 +25,16 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // User should NOT be authenticated immediately - must verify email first
+        $this->assertGuest();
+
+        // Should redirect to login with success message
+        $response->assertRedirect(route('login', absolute: false));
+        $response->assertSessionHas('success');
+
+        // User should be created in database
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+        ]);
     }
 }

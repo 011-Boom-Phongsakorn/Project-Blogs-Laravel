@@ -53,9 +53,10 @@ class RegisteredUserController extends Controller
         // Send welcome email
         $user->notify(new WelcomeNotification());
 
-        Auth::login($user);
+        // Don't auto login - user must verify email first
+        // Auth::login($user);
 
-        return redirect(route('home', absolute: false))
-            ->with('success', 'Welcome to ' . config('app.name') . '! Check your email for getting started tips.');
+        return redirect(route('login'))
+            ->with('success', 'Registration successful! Please check your email to verify your account before logging in.');
     }
 }

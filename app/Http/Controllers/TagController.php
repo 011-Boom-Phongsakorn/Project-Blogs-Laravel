@@ -16,6 +16,7 @@ class TagController extends Controller
     public function index(): View
     {
         $tags = Tag::withCount('posts')
+            ->having('posts_count', '>', 0)
             ->orderBy('posts_count', 'desc')
             ->orderBy('name')
             ->paginate(20);

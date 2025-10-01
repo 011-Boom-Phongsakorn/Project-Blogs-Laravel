@@ -21,8 +21,13 @@ class Post extends Model
             Cache::forget('popular_tags');
         });
 
-        static::deleted(function () {
+        static::deleted(function ($post) {
             Cache::forget('popular_tags');
+
+            // Delete all notifications related to this post
+            \DB::table('notifications')
+                ->where('data->post_slug', $post->slug)
+                ->delete();
         });
     }
 
@@ -102,12 +107,26 @@ class Post extends Model
 
     public function getFeaturedImageUrlAttribute()
     {
-        return $this->featured_image ? asset('storage/' . $this->featured_image) : null;
+        if (!$this->featured_image) return null;
+
+        // If it's already a full URL, return as is
+        if (str_starts_with($this->featured_image, 'http')) {
+            return $this->featured_image;
+        }
+
+        return asset('storage/' . $this->featured_image);
     }
 
     public function getCoverImageUrlAttribute()
     {
-        return $this->cover_image ? asset('storage/' . $this->cover_image) : null;
+        if (!$this->cover_image) return null;
+
+        // If it's already a full URL, return as is
+        if (str_starts_with($this->cover_image, 'http')) {
+            return $this->cover_image;
+        }
+
+        return asset('storage/' . $this->cover_image);
     }
 
     public function hasImage()
@@ -158,28 +177,51 @@ class Post extends Model
      */
     public function relatedPosts($limit = 3)
     {
-        if ($this->tags->isEmpty()) {
-            // If no tags, return recent posts from same author
-            return Post::where('user_id', $this->user_id)
-                ->where('id', '!=', $this->id)
-                ->published()
-                ->latest()
-                ->take($limit)
-                ->get();
+        $posts = collect();
+
+        // Try to get posts with shared tags first
+        if ($this->tags->isNotEmpty()) {
+            $tagIds = $this->tags->pluck('id');
+
+            $posts = Post::whereHas('tags', function ($query) use ($tagIds) {
+                $query->whereIn('tag_id', $tagIds);
+            })
+            ->where('id', '!=', $this->id)
+            ->published()
+            ->with(['user', 'tags'])
+            ->withCount(['likes', 'comments'])
+            ->latest()
+            ->take($limit)
+            ->get();
         }
 
-        // Get posts with shared tags
-        $tagIds = $this->tags->pluck('id');
+        // If not enough posts with shared tags, try same author
+        if ($posts->count() < $limit) {
+            $authorPosts = Post::where('user_id', $this->user_id)
+                ->where('id', '!=', $this->id)
+                ->published()
+                ->with(['user', 'tags'])
+                ->withCount(['likes', 'comments'])
+                ->latest()
+                ->take($limit - $posts->count())
+                ->get();
 
-        return Post::whereHas('tags', function ($query) use ($tagIds) {
-            $query->whereIn('tag_id', $tagIds);
-        })
-        ->where('id', '!=', $this->id)
-        ->published()
-        ->with(['user', 'tags'])
-        ->withCount(['likes', 'comments'])
-        ->latest()
-        ->take($limit)
-        ->get();
+            $posts = $posts->merge($authorPosts);
+        }
+
+        // If still not enough, get latest posts from anyone
+        if ($posts->count() < $limit) {
+            $latestPosts = Post::where('id', '!=', $this->id)
+                ->published()
+                ->with(['user', 'tags'])
+                ->withCount(['likes', 'comments'])
+                ->latest()
+                ->take($limit - $posts->count())
+                ->get();
+
+            $posts = $posts->merge($latestPosts);
+        }
+
+        return $posts->unique('id')->take($limit);
     }
 }

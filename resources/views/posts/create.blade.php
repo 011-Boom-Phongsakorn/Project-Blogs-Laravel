@@ -66,14 +66,12 @@
 
                     <!-- Hidden file input -->
                     <input
-                        id="cover_image_file"
+                        id="cover_image"
+                        name="cover_image"
                         type="file"
                         class="hidden"
                         accept="image/*"
                     >
-
-                    <!-- Hidden input for the actual URL that will be submitted -->
-                    <input type="hidden" name="cover_image" id="cover_image" value="{{ old('cover_image') }}">
 
                     <!-- Image preview -->
                     <div id="image-preview" class="mt-4 hidden">
@@ -90,14 +88,6 @@
                             </button>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-2" id="image-info"></p>
-                    </div>
-
-                    <!-- Upload progress -->
-                    <div id="upload-progress" class="mt-4 hidden">
-                        <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div id="progress-bar" class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Uploading...</p>
                     </div>
 
                     @error('cover_image')
@@ -177,138 +167,77 @@
     <script>
         // Image upload handling
         const uploadArea = document.getElementById('image-upload-area');
-        const fileInput = document.getElementById('cover_image_file');
+        const fileInput = document.getElementById('cover_image');
         const imagePreview = document.getElementById('image-preview');
         const previewImage = document.getElementById('preview-image');
         const imageInfo = document.getElementById('image-info');
-        const uploadProgress = document.getElementById('upload-progress');
-        const progressBar = document.getElementById('progress-bar');
-        const coverImageInput = document.getElementById('cover_image');
-
-        // Flag to prevent multiple clicks
-        let isClickPending = false;
-
-        // Remove any existing event listeners by cloning
-        const newUploadArea = uploadArea.cloneNode(true);
-        uploadArea.parentNode.replaceChild(newUploadArea, uploadArea);
-        const uploadAreaClean = document.getElementById('image-upload-area');
 
         // Click to upload
-        uploadAreaClean.addEventListener('click', (e) => {
+        uploadArea.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation();
-
-            // Prevent duplicate clicks
-            if (isClickPending) {
-                console.log('Click blocked - already pending');
-                return;
-            }
-
-            isClickPending = true;
-            console.log('Upload area clicked - opening dialog');
-
             fileInput.click();
-
-            // Reset flag after a short delay
-            setTimeout(() => {
-                isClickPending = false;
-            }, 1000);
         });
 
         // Drag and drop
-        uploadAreaClean.addEventListener('dragover', (e) => {
+        uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
-            uploadAreaClean.classList.add('border-blue-400', 'bg-blue-50');
+            uploadArea.classList.add('border-blue-400', 'bg-blue-50', 'dark:bg-gray-700');
         });
 
-        uploadAreaClean.addEventListener('dragleave', () => {
-            uploadAreaClean.classList.remove('border-blue-400', 'bg-blue-50');
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('border-blue-400', 'bg-blue-50', 'dark:bg-gray-700');
         });
 
-        uploadAreaClean.addEventListener('drop', (e) => {
+        uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
-            uploadAreaClean.classList.remove('border-blue-400', 'bg-blue-50');
+            uploadArea.classList.remove('border-blue-400', 'bg-blue-50', 'dark:bg-gray-700');
 
             if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                handleFileUpload(e.dataTransfer.files[0]);
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(e.dataTransfer.files[0]);
+                fileInput.files = dataTransfer.files;
+                handleFilePreview(e.dataTransfer.files[0]);
             }
         });
 
         // File input change
         fileInput.addEventListener('change', (e) => {
-            console.log('File input changed, files:', e.target.files.length);
             if (e.target.files.length) {
-                handleFileUpload(e.target.files[0]);
+                handleFilePreview(e.target.files[0]);
             }
         });
 
-        function handleFileUpload(file) {
+        function handleFilePreview(file) {
             // Validate file type
             if (!file.type.startsWith('image/')) {
                 alert('Please upload an image file');
+                fileInput.value = '';
                 return;
             }
 
-            // Validate file size (5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File size must be less than 5MB');
+            // Validate file size (10MB to match validation)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size must be less than 10MB');
+                fileInput.value = '';
                 return;
             }
 
-            // Show preview immediately
+            // Show preview
             const reader = new FileReader();
             reader.onload = (e) => {
                 previewImage.src = e.target.result;
                 imagePreview.classList.remove('hidden');
-                uploadAreaClean.classList.add('hidden');
+                uploadArea.classList.add('hidden');
+                imageInfo.textContent = `${file.name} (${formatFileSize(file.size)})`;
             };
             reader.readAsDataURL(file);
-
-            // Upload to server
-            uploadToServer(file);
-        }
-
-        function uploadToServer(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            // Show progress
-            uploadProgress.classList.remove('hidden');
-
-            fetch('{{ route("upload.image") }}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    coverImageInput.value = data.url;
-                    imageInfo.textContent = `Uploaded: ${file.name} (${formatFileSize(file.size)})`;
-                } else {
-                    throw new Error(data.message || 'Upload failed');
-                }
-            })
-            .catch(error => {
-                console.error('Upload error:', error);
-                alert('Upload failed: ' + error.message);
-                removeImage();
-            })
-            .finally(() => {
-                uploadProgress.classList.add('hidden');
-                progressBar.style.width = '0%';
-            });
         }
 
         function removeImage() {
             previewImage.src = '';
-            coverImageInput.value = '';
-            imagePreview.classList.add('hidden');
-            uploadAreaClean.classList.remove('hidden');
             fileInput.value = '';
+            imagePreview.classList.add('hidden');
+            uploadArea.classList.remove('hidden');
         }
 
         function formatFileSize(bytes) {

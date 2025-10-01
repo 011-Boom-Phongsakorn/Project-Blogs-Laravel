@@ -78,7 +78,7 @@
                         <span class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500">Upload a file</span>
                         <p class="pl-1">or drag and drop</p>
                     </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 2MB</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 5MB</p>
                 </div>
             </div>
 
@@ -208,8 +208,8 @@
                 return;
             }
 
-            if (file.size > 2 * 1024 * 1024) {
-                alert('File size must be less than 2MB');
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
                 return;
             }
 

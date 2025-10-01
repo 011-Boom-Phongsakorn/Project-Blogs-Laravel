@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create results container if it doesn't exist
         if (input.dataset.liveSearch === 'true') {
             resultsContainer = document.createElement('div');
-            resultsContainer.className = 'absolute z-50 w-full bg-white border border-gray-200 rounded-b-lg shadow-lg max-h-96 overflow-y-auto hidden';
+            resultsContainer.className = 'absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-lg shadow-lg max-h-96 overflow-y-auto hidden';
             resultsContainer.style.top = '100%';
 
             // Position the results container
@@ -116,8 +116,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Perform live search
     function performLiveSearch(query, resultsContainer) {
         const loadingHTML = `
-            <div class="p-4 text-center text-gray-500">
-                <div class="animate-spin inline-block w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full mr-2"></div>
+            <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+                <div class="animate-spin inline-block w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full mr-2"></div>
                 Searching...
             </div>
         `;
@@ -136,10 +136,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (Array.isArray(data) && data.length > 0) {
                 const resultsHTML = data.map(post => `
-                    <div class="search-result-item p-3 hover:bg-gray-50 border-b border-gray-100 cursor-pointer">
+                    <div class="search-result-item p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 cursor-pointer">
                         <a href="${post.url}" class="block">
-                            <h4 class="font-medium text-gray-900 text-sm mb-1">${escapeHtml(post.title)}</h4>
-                            <div class="flex items-center text-xs text-gray-500">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">${escapeHtml(post.title)}</h4>
+                            <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
                                 <span>${escapeHtml(post.author)}</span>
                             </div>
                         </a>
@@ -147,9 +147,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 `).join('');
 
                 const viewAllHTML = `
-                    <div class="p-3 border-t border-gray-200 bg-gray-50">
+                    <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                         <a href="/search?q=${encodeURIComponent(query)}"
-                           class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                           class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
                             View all results →
                         </a>
                     </div>
@@ -158,10 +158,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 resultsContainer.innerHTML = resultsHTML + viewAllHTML;
             } else {
                 resultsContainer.innerHTML = `
-                    <div class="p-4 text-center text-gray-500">
+                    <div class="p-4 text-center text-gray-500 dark:text-gray-400">
                         <p class="text-sm">No posts found for "${escapeHtml(query)}"</p>
                         <a href="/search?q=${encodeURIComponent(query)}"
-                           class="text-blue-600 hover:text-blue-800 text-xs">
+                           class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-xs">
                             Try advanced search →
                         </a>
                     </div>
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Search error:', error);
             resultsContainer.innerHTML = `
-                <div class="p-4 text-center text-red-500">
+                <div class="p-4 text-center text-red-500 dark:text-red-400">
                     <p class="text-sm">Search failed. Please try again.</p>
                 </div>
             `;
@@ -202,19 +202,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!suggestionsContainer) {
             suggestionsContainer = document.createElement('div');
-            suggestionsContainer.className = 'search-suggestions absolute z-40 w-full bg-white border border-gray-200 rounded-b-lg shadow-lg';
+            suggestionsContainer.className = 'search-suggestions absolute z-40 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-lg shadow-lg';
             suggestionsContainer.style.top = '100%';
             wrapper.appendChild(suggestionsContainer);
         }
 
         const suggestionsHTML = `
             <div class="p-2">
-                <p class="text-xs text-gray-500 mb-2">Popular topics:</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Popular topics:</p>
                 <div class="flex flex-wrap gap-1">
                     ${suggestions.map(suggestion => `
                         <button type="button"
                                 data-suggestion="${escapeHtml(suggestion)}"
-                                class="suggestion-tag px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded">
+                                class="suggestion-tag px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded">
                             ${escapeHtml(suggestion)}
                         </button>
                     `).join('')}

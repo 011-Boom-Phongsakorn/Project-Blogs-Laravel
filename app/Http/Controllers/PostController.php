@@ -49,9 +49,14 @@ class PostController extends Controller
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
 
-        // Handle image upload
+        // Handle cover image upload
+        if ($request->hasFile('cover_image')) {
+            $validated['cover_image'] = $request->file('cover_image')->store('posts/covers', 'public');
+        }
+
+        // Handle featured image upload
         if ($request->hasFile('featured_image')) {
-            $validated['featured_image'] = $request->file('featured_image')->store('posts', 'public');
+            $validated['featured_image'] = $request->file('featured_image')->store('posts/featured', 'public');
         }
 
         $post = Post::create($validated);
@@ -107,13 +112,22 @@ class PostController extends Controller
 
         $validated = $request->validated();
 
-        // Handle image upload
+        // Handle cover image upload
+        if ($request->hasFile('cover_image')) {
+            // Delete old image if exists
+            if ($post->cover_image) {
+                \Storage::disk('public')->delete($post->cover_image);
+            }
+            $validated['cover_image'] = $request->file('cover_image')->store('posts/covers', 'public');
+        }
+
+        // Handle featured image upload
         if ($request->hasFile('featured_image')) {
             // Delete old image if exists
             if ($post->featured_image) {
                 \Storage::disk('public')->delete($post->featured_image);
             }
-            $validated['featured_image'] = $request->file('featured_image')->store('posts', 'public');
+            $validated['featured_image'] = $request->file('featured_image')->store('posts/featured', 'public');
         }
 
         $post->update($validated);

@@ -1,6 +1,29 @@
 <x-app-layout>
     <x-slot name="title">{{ $post->title }} - {{ config('app.name', 'Blog') }}</x-slot>
 
+    @push('meta')
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="article">
+        <meta property="og:url" content="{{ route('posts.show', $post) }}">
+        <meta property="og:title" content="{{ $post->title }}">
+        <meta property="og:description" content="{{ $post->excerpt ?? Str::limit(strip_tags($post->content), 160) }}">
+        @if($post->hasImage())
+            <meta property="og:image" content="{{ $post->getImageUrl() }}">
+        @endif
+        <meta property="og:site_name" content="{{ config('app.name', 'Blog') }}">
+        <meta property="article:published_time" content="{{ $post->created_at->toIso8601String() }}">
+        <meta property="article:author" content="{{ $post->user->name }}">
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="{{ route('posts.show', $post) }}">
+        <meta name="twitter:title" content="{{ $post->title }}">
+        <meta name="twitter:description" content="{{ $post->excerpt ?? Str::limit(strip_tags($post->content), 160) }}">
+        @if($post->hasImage())
+            <meta name="twitter:image" content="{{ $post->getImageUrl() }}">
+        @endif
+    @endpush
+
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Post Header -->
         <header class="mb-8">
@@ -61,22 +84,15 @@
                 </div>
             @endif
 
-            <!-- Cover Image -->
-            @if($post->cover_image)
-                <div class="mb-8">
-                    <img src="{{ $post->cover_image }}" alt="{{ $post->title }}" class="w-full h-64 md:h-96 object-cover rounded-lg">
-                </div>
-            @endif
-
             <!-- Excerpt -->
             @if($post->excerpt)
-                <div class="text-xl text-gray-600 mb-8 font-medium leading-relaxed">
+                <div class="text-xl text-gray-600 dark:text-gray-400 mb-8 font-medium leading-relaxed">
                     {{ $post->excerpt }}
                 </div>
             @endif
         </header>
 
-        <!-- Featured Image -->
+        <!-- Post Image (cover or featured) -->
         @if($post->hasImage())
             <div class="mb-8">
                 <img src="{{ $post->getImageUrl() }}" alt="{{ $post->getImageAlt() }}" class="w-full h-auto rounded-lg shadow-sm">
@@ -170,11 +186,10 @@
                                 </div>
 
                                 @can('delete', $comment)
-                                    <form action="{{ route('comments.destroy', $comment) }}" method="POST" class="inline">
+                                    <form action="{{ route('comments.destroy', $comment) }}" method="POST" class="inline" onsubmit="return confirmDelete(event, 'comment')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm"
-                                                onclick="return confirm('Are you sure you want to delete this comment?')">
+                                        <button type="submit" class="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium transition-colors">
                                             Delete
                                         </button>
                                     </form>
@@ -211,7 +226,7 @@
 
                 <!-- Copy Link -->
                 <button onclick="copyToClipboard('{{ route('posts.show', $post) }}')"
-                        class="flex items-center justify-center w-10 h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors"
+                        class="flex items-center justify-center w-10 h-10 bg-gray-600 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600 text-white rounded-full transition-all duration-200 hover:scale-110"
                         title="Copy link">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
@@ -226,11 +241,11 @@
         @endphp
 
         @if($relatedPosts->count() > 0)
-            <div class="mt-12 pt-8 border-t border-gray-200">
-                <h3 class="text-2xl font-bold text-gray-900 mb-6">Related Posts</h3>
+            <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Related Posts</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     @foreach($relatedPosts as $relatedPost)
-                        <article class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                        <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow">
                             @if($relatedPost->hasImage())
                                 <a href="{{ route('posts.show', $relatedPost) }}">
                                     <img src="{{ $relatedPost->getImageUrl() }}" alt="{{ $relatedPost->getImageAlt() }}"
@@ -240,14 +255,14 @@
                             @endif
                             <div class="p-4">
                                 <h4 class="font-bold text-lg mb-2 line-clamp-2">
-                                    <a href="{{ route('posts.show', $relatedPost) }}" class="hover:text-blue-600">
+                                    <a href="{{ route('posts.show', $relatedPost) }}" class="text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400">
                                         {{ $relatedPost->title }}
                                     </a>
                                 </h4>
                                 @if($relatedPost->excerpt)
-                                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ $relatedPost->excerpt }}</p>
+                                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">{{ $relatedPost->excerpt }}</p>
                                 @endif
-                                <div class="flex items-center justify-between text-sm text-gray-500">
+                                <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                                     <span>{{ $relatedPost->reading_time }}</span>
                                     <span>{{ $relatedPost->likes_count }} likes</span>
                                 </div>
@@ -263,10 +278,130 @@
     <script>
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(function() {
-                alert('Link copied to clipboard!');
+                showNotification('Link copied to clipboard!', 'success');
             }, function(err) {
                 console.error('Could not copy text: ', err);
+                showNotification('Failed to copy link', 'error');
             });
+        }
+
+        function confirmDelete(event, type) {
+            event.preventDefault();
+            const form = event.target;
+
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center p-4';
+            modal.style.animation = 'fadeIn 0.2s ease-out';
+
+            // Add backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'absolute inset-0 bg-black/60 backdrop-blur-sm';
+            backdrop.style.animation = 'fadeIn 0.2s ease-out';
+            modal.appendChild(backdrop);
+
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.className = 'relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden';
+            modalContent.style.animation = 'slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+            modalContent.innerHTML = `
+                <div class="p-6">
+                    <!-- Icon -->
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
+                        <svg class="h-8 w-8 text-red-600 dark:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="text-center text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                        Delete ${type}?
+                    </h3>
+
+                    <!-- Description -->
+                    <p class="text-center text-gray-600 dark:text-gray-400 mb-6">
+                        This action cannot be undone. The ${type} will be permanently removed from the system.
+                    </p>
+
+                    <!-- Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button type="button"
+                                class="cancel-btn flex-1 px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-95 transition-all duration-150">
+                            Cancel
+                        </button>
+                        <button type="button"
+                                class="delete-btn flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl active:scale-95 transition-all duration-150">
+                            Delete ${type}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+
+            // Add animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px) scale(0.95);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Handle cancel
+            const cancelBtn = modalContent.querySelector('.cancel-btn');
+            const closeModal = () => {
+                modal.style.animation = 'fadeOut 0.2s ease-out';
+                setTimeout(() => {
+                    modal.remove();
+                    style.remove();
+                }, 200);
+            };
+
+            cancelBtn.addEventListener('click', closeModal);
+            backdrop.addEventListener('click', closeModal);
+
+            // Handle delete
+            const deleteBtn = modalContent.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => {
+                // Remove the onsubmit handler and submit
+                form.onsubmit = null;
+                form.submit();
+            });
+
+            // ESC key to close
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+
+            return false;
+        }
+
+        function showNotification(message, type = 'info') {
+            window.dispatchEvent(new CustomEvent('show-notification', {
+                detail: { message, type }
+            }));
         }
     </script>
     @endpush

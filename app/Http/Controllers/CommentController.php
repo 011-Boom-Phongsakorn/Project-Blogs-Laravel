@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\Comment;
+use App\Notifications\PostCommented;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -28,11 +29,16 @@ class CommentController extends Controller
             'content' => 'required|string|max:1000',
         ]);
 
-        Comment::create([
+        $comment = Comment::create([
             'post_id' => $post->id,
             'user_id' => auth()->id(),
             'content' => $request->content,
         ]);
+
+        // Send notification to post author (not yourself)
+        if ($post->user_id !== auth()->id()) {
+            $post->user->notify(new PostCommented(auth()->user(), $post, $comment));
+        }
 
         return redirect()->route('posts.show', $post)
             ->with('success', 'Comment added successfully!');

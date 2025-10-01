@@ -6,6 +6,7 @@ import './blog/social';
 import './blog/search';
 import './blog/notifications';
 import './blog/image-upload';
+import './blog/notifications-dropdown';
 
 window.Alpine = Alpine;
 

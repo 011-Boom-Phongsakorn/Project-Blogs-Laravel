@@ -10,6 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\RssFeedController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PostController::class, 'index'])->name('home');
@@ -40,8 +41,8 @@ Route::get('/tags/{tag:name}', [TagController::class, 'show'])->name('tags.show'
 Route::get('/api/tags/popular', [TagController::class, 'popular'])->name('tags.popular');
 Route::get('/api/tags/search', [TagController::class, 'search'])->name('tags.search');
 
-// Authenticated routes with rate limiting
-Route::middleware(['auth', 'throttle:60,1'])->group(function () {
+// Authenticated routes with rate limiting and email verification
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
     // My posts (must be before {slug} routes)
     Route::get('/my-posts', [PostController::class, 'myPosts'])->name('posts.mine');
 
@@ -52,9 +53,9 @@ Route::middleware(['auth', 'throttle:60,1'])->group(function () {
     Route::delete('/posts/{post:slug}', [PostController::class, 'destroy'])->name('posts.destroy')->middleware('throttle:10,1');
 
     // Social features (use ID for AJAX endpoints - explicitly bind by ID)
-    Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])->name('posts.like')->middleware('throttle:30,1');
-    Route::post('/users/{user}/follow', [FollowController::class, 'toggle'])->name('users.follow')->middleware('throttle:30,1');
-    Route::post('/posts/{post}/bookmark', [BookmarkController::class, 'toggle'])->name('posts.bookmark')->middleware('throttle:30,1');
+    Route::post('/posts/{post:id}/like', [LikeController::class, 'toggle'])->name('posts.like')->middleware('throttle:30,1');
+    Route::post('/users/{user:id}/follow', [FollowController::class, 'toggle'])->name('users.follow')->middleware('throttle:30,1');
+    Route::post('/posts/{post:id}/bookmark', [BookmarkController::class, 'toggle'])->name('posts.bookmark')->middleware('throttle:30,1');
     Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
 
     // Comments
@@ -70,6 +71,13 @@ Route::middleware(['auth', 'throttle:60,1'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/count', [NotificationController::class, 'count'])->name('notifications.count');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
 Route::get('/dashboard', function () {

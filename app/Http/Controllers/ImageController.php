@@ -17,7 +17,7 @@ class ImageController extends Controller
                 'required',
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
-                'max:5120', // 5MB max
+                'max:10240', // 10MB max
                 'dimensions:min_width=100,min_height=100,max_width=4000,max_height=4000'
             ],
         ]);
@@ -75,7 +75,7 @@ class ImageController extends Controller
                 'required',
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
-                'max:2048', // 2MB max
+                'max:5120', // 5MB max
                 'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000'
             ],
         ]);
