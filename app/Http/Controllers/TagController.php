@@ -16,7 +16,7 @@ class TagController extends Controller
     public function index(): View
     {
         $tags = Tag::withCount('posts')
-            ->having('posts_count', '>', 0)
+            ->whereHas('posts')
             ->orderBy('posts_count', 'desc')
             ->orderBy('name')
             ->paginate(20);
@@ -46,7 +46,7 @@ class TagController extends Controller
     {
         $tags = \Cache::remember('popular_tags', 3600, function () {
             return Tag::withCount('posts')
-                ->having('posts_count', '>', 0)
+                ->whereHas('posts')
                 ->orderBy('posts_count', 'desc')
                 ->limit(20)
                 ->get(['name', 'posts_count']);

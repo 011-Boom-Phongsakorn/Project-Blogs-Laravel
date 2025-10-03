@@ -48,10 +48,11 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
-
-        // Send welcome email
-        $user->notify(new WelcomeNotification());
+        // Queue email sending to avoid blocking registration
+        dispatch(function () use ($user) {
+            event(new Registered($user));
+            $user->notify(new WelcomeNotification());
+        })->afterResponse();
 
         // Don't auto login - user must verify email first
         // Auth::login($user);

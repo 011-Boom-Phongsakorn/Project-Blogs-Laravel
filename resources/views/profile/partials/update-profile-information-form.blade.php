@@ -234,10 +234,18 @@
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.message || 'Upload failed');
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     avatarUrlInput.value = data.url;

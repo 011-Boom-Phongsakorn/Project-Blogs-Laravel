@@ -64,7 +64,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
 
     // Image uploads (strict rate limit)
     Route::post('/upload/image', [ImageController::class, 'upload'])->name('upload.image')->middleware('throttle:10,1');
-    Route::post('/upload/avatar', [ImageController::class, 'uploadAvatar'])->name('upload.avatar')->middleware('throttle:5,1');
+    Route::post('/upload/avatar', [ImageController::class, 'uploadAvatar'])->name('upload.avatar')->middleware('throttle:20,1');
     Route::delete('/upload/delete', [ImageController::class, 'delete'])->name('upload.delete')->middleware('throttle:10,1');
 
     // Profile management
