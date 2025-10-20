@@ -1,16 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan make:migration:*)",
-      "Bash(php artisan:*)",
-      "Bash(composer:*)",
-      "Bash(npm install:*)",
-      "Bash(npm run build:*)",
-      "Bash(mysql:*)",
-      "Bash(curl:*)",
-      "Bash(where ngrok)",
-      "Bash(if exist \"public\\storage\" rmdir \"public\\storage\")",
-      "Bash(php -r \"require ''vendor/autoload.php''; $app = require_once ''bootstrap/app.php''; $app->make(''Illuminate\\Contracts\\Console\\Kernel'')->bootstrap(); $user = App\\Models\\User::first(); $user->notify(new App\\Notifications\\WelcomeNotification()); echo ''Email queued for '' . $user->email . PHP_EOL;\")"
+      "Bash(ping:*)",
+      "Bash(nslookup:*)",
+      "Bash(php artisan tinker:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": [],
     "ask": []

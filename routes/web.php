@@ -41,8 +41,8 @@ Route::get('/tags/{tag:name}', [TagController::class, 'show'])->name('tags.show'
 Route::get('/api/tags/popular', [TagController::class, 'popular'])->name('tags.popular');
 Route::get('/api/tags/search', [TagController::class, 'search'])->name('tags.search');
 
-// Authenticated routes with rate limiting and email verification
-Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
+// Authenticated routes with rate limiting
+Route::middleware(['auth', 'throttle:60,1'])->group(function () {
     // My posts (must be before {slug} routes)
     Route::get('/my-posts', [PostController::class, 'myPosts'])->name('posts.mine');
 
@@ -82,6 +82,6 @@ Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 require __DIR__.'/auth.php';
